@@ -12,6 +12,8 @@ namespace pseudo_sntp
 
 uint32_t resolve_ipv4(std::string const& hostname)
 {
+    if (hostname.empty()) {return 0; }
+    
     struct addrinfo hints;
     memset(reinterpret_cast<void*>(&hints), 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET;
