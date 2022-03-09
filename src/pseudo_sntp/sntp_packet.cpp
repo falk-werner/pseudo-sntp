@@ -1,4 +1,5 @@
 #include "pseudo_sntp/sntp_packet.hpp"
+#include "pseudo_sntp/sntp_defines.hpp"
 
 #include <iostream>
 
@@ -31,11 +32,14 @@ public:
 
     void add_u32(uint32_t value)
     {
+        uint8_t buffer[4];
         for (size_t i = 0; i < 4; i++) {
-            uint8_t v = value & 0xff;
+            buffer[i] = value & 0xff;
             value >>= 8;
+        }
 
-            add_u8(v);
+        for (int i = 3; i >= 0; i--) {
+            add_u8(buffer[i]);
         }
     }
 
@@ -94,9 +98,9 @@ private:
 };
 
 sntp_packet::sntp_packet()
-: leap(0)
-, version(4)
-, mode(3)
+: leap(SNTP_LEAP_NO_WARNING)
+, version(SNTP_VERSION_4)
+, mode(SNTP_MODE_CLIENT)
 , stratum(0)
 , poll_intervall(0)
 , precision(0)

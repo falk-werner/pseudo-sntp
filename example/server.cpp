@@ -104,9 +104,16 @@ int run(std::string const & local_interface)
 
         signal(SIGINT, &on_shutdown_requested);
 
-        server.set_packet_handler([](sntp_packet const& request, sntp_packet & reply) {
-            request.dump();
+        server.set_packet_handler([](sntp_packet const&, sntp_packet & reply) {
+            // pretend specific time
+            // reply.receive = pseudo_sntp::sntp_timestamp::from_iso8601("2020-12-31T01:23:45Z");
+            // reply.transmit = pseudo_sntp::sntp_timestamp::from_iso8601("2020-12-31T01:23:50Z");
+
+            // set stratum
+            // reply.stratum = 1;
+
             reply.dump();
+            std::cout << std::endl;
         });
 
         while (!g_shutdown_requested)

@@ -22,7 +22,7 @@ struct sntp_packet
     uint8_t mode;
     uint8_t stratum;
     uint8_t poll_intervall;
-    uint8_t precision;
+    int8_t precision;
     uint32_t root_delay;
     uint32_t root_dispersion;
     unsigned char reference_identifier[4];

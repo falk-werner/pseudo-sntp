@@ -25,7 +25,24 @@ public:
             {
                 udp_client conn(server.get_fd());
                 sntp_packet request(data, size);
+
                 sntp_packet reply;
+                reply.leap = SNTP_LEAP_UNSYNCRHONIZED;
+                reply.version = request.version;
+                reply.mode = SNTP_MODE_SERVER;
+                reply.stratum = SNTP_STRATUM_SECONDARY_3;
+                reply.poll_intervall = 4;
+                reply.precision = 0;
+                reply.root_delay = 0;
+                reply.root_dispersion = 0;
+                reply.reference_identifier[0] = 0;
+                reply.reference_identifier[1] = 0;
+                reply.reference_identifier[2] = 0;
+                reply.reference_identifier[3] = 0;
+                reply.reference = sntp_timestamp::zero();
+                reply.originate = request.transmit;
+                reply.receive = sntp_timestamp::now();
+                reply.transmit = sntp_timestamp::now();
 
                 handler(request, reply);
 
