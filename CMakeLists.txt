@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(pseude-sntp VERSION 1.0.0 DESCRIPTION "Testing SNTP")
+project(pseudo_sntp VERSION 1.0.0 DESCRIPTION "Pseudo SNTP library for testing purposes")
 
 option(WITHOUT_EXAMPLES "Do not build examples" OFF)
 
@@ -22,12 +22,20 @@ add_library(pseudo_sntp STATIC
 target_include_directories(pseudo_sntp PUBLIC include)
 target_include_directories(pseudo_sntp PRIVATE src)
 
+configure_file(pseudo_sntp.pc.in pseudo_sntp.pc @ONLY)
+
+install(TARGETS pseudo_sntp)
+install(DIRECTORY include/pseudo_sntp DESTINATION include)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pseudo_sntp.pc DESTINATION lib/pkgconfig)
+
 if(NOT WITHOUT_EXAMPLES)
 
 add_executable(sntp-client example/client.cpp)
 target_link_libraries(sntp-client PRIVATE pseudo_sntp)
+install(TARGETS sntp-client)
 
 add_executable(sntp-server example/server.cpp)
 target_link_libraries(sntp-server PRIVATE pseudo_sntp)
+install(TARGETS sntp-server)
 
 endif()
