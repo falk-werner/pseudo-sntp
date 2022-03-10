@@ -1,4 +1,5 @@
 # pseudo-sntp
+
 Pseudo SNTP server for testing purposes.
 
 ## Build and install
@@ -13,12 +14,18 @@ sudo make install
 ## Run example server
 
 ````
-sntp-server -i localhost
+sntp-server -i localhost -v
 ````
 
-The example server will bind to the IP interface specified by `-i` option on SNTP Port (123 UDP). It provides the local time with precision of one second.
+Enhanced privileges (e.g. sudo) might be required to successfully bind to SNTP port (123 UDP).
 
-Enhanced privileges (e.g. sudo) might be required to successfully bind.
+| Option          | Example                 | Description |
+| --------------- | ----------------------- | ----------- |
+| -i, --interface | -i localhost            | specify local interface to bind (default: any) |
+| -t, --time      | -t 2022-03-10T18:43:00Z | specify time to reply (default: system time) |
+| -s, --stratum   | -s 1                    | specity stratum to reply (range: 0..15) |
+| -v, --verbode   | -v                      | print SNTP replies |
+| -h, --help      | -h                      | print usage and exit |
 
 ## Run example client
 
@@ -27,6 +34,10 @@ sntp-client localhost
 ````
 
 The example clients requests the time form the server provided as argument. It will print the results and does not perform any changes on the local system.
+
+| Option        | Example | Description |
+| ------------- | ------- | ----------- |
+| -t, --timeout | -t 1000 | specify receive timeout in milli seconds (default: 5000) |
 
 ## Intended purpose
 
