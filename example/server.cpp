@@ -10,6 +10,7 @@
 
 using pseudo_sntp::sntp_server;
 using pseudo_sntp::sntp_packet;
+using pseudo_sntp::sntp_timestamp;
 
 namespace
 {
@@ -17,6 +18,9 @@ namespace
 struct context
 {
     std::string local_interface;
+    std::string time;
+    int stratum;
+    bool verbose;
     bool show_help;
     int exit_code;
 };
@@ -46,16 +50,24 @@ Note:
 
 Options:
     -i, --interface <interface> - bind to specific interface (Default: any)
+    -s, --stratum   <stratum>   - override stratum (0..15)
+    -t, --time      <time>      - fake time (Default: use system time)
+    -v, --verbose               - print SNTP replies
     -h, --help                  - print this message
 Examples:
     sudo sntp-client
     sudo sntp-client -i localhost
+    sudo sntp-client -i localhost -stratum 1
+    sudo sntp-client -i localhost -time 2020-12-31T01:23:45Z    
 )";
 }
 
 void parse_args(int argc, char * argv[], context & ctx)
 {
     ctx.local_interface = "";
+    ctx.time = "";
+    ctx.stratum = -1;
+    ctx.verbose = false;
     ctx.show_help = false;
     ctx.exit_code = EXIT_SUCCESS;
 
@@ -68,11 +80,14 @@ void parse_args(int argc, char * argv[], context & ctx)
         static option const long_opts[] =
         {
             {"interface", required_argument, nullptr, 0},
+            {"time"     , required_argument, nullptr, 0},
+            {"stratum"  , required_argument, nullptr, 0},
+            {"verbose"  , no_argument      , nullptr, 0},
             {"help"     , no_argument      , nullptr, 0},
             {nullptr    , 0                , nullptr, 0}
         };
 
-        int c = getopt_long(argc, argv, "i:h", long_opts, nullptr);
+        int c = getopt_long(argc, argv, "i:t:s:vh", long_opts, nullptr);
         switch (c)
         {
             case -1:
@@ -85,6 +100,46 @@ void parse_args(int argc, char * argv[], context & ctx)
             case 'i':
                 ctx.local_interface = optarg;
                 break;
+            case 't':
+                try
+                {
+                    sntp_timestamp::from_iso8601(optarg);
+                    ctx.time = optarg;
+                    
+                }
+                catch (...)
+                {
+                    std::cerr << "error: invalid time" << std::endl;
+                    ctx.exit_code = EXIT_FAILURE;
+                    ctx.show_help = true;
+                    finished = true;
+
+                }
+                break;
+            case 's':
+                try 
+                {
+                    int stratum = std::stoi(optarg);
+                    if ((0 <= stratum) && (stratum < 16))
+                    {
+                        ctx.stratum = stratum;
+                    }
+                    else
+                    {
+                        throw std::runtime_error("invalid value");
+                    }
+                }
+                catch (...)
+                {
+                    std::cerr << "error: invalid value for stratum" << std::endl;
+                    ctx.exit_code = EXIT_FAILURE;
+                    ctx.show_help = true;
+                    finished = true;
+                }
+                break;
+            case 'v':
+                ctx.verbose = true;
+                break; 
             default:
                 ctx.exit_code = EXIT_FAILURE;
                 ctx.show_help = true;
@@ -93,27 +148,32 @@ void parse_args(int argc, char * argv[], context & ctx)
     }
 }
 
-int run(std::string const & local_interface)
+void run(context &ctx)
 {
-    int exit_code = EXIT_SUCCESS;
-
     try
     {
-        sntp_server server(local_interface);
+        sntp_server server(ctx.local_interface);
         g_server = &server;
 
         signal(SIGINT, &on_shutdown_requested);
 
-        server.set_packet_handler([](sntp_packet const&, sntp_packet & reply) {
-            // pretend specific time
-            // reply.receive = pseudo_sntp::sntp_timestamp::from_iso8601("2020-12-31T01:23:45Z");
-            // reply.transmit = pseudo_sntp::sntp_timestamp::from_iso8601("2020-12-31T01:23:50Z");
+        server.set_packet_handler([&ctx](sntp_packet const&, sntp_packet & reply) {
+            if (!ctx.time.empty())
+            {
+                reply.receive = pseudo_sntp::sntp_timestamp::from_iso8601(ctx.time);
+                reply.transmit = reply.receive;
+            }
 
-            // set stratum
-            // reply.stratum = 1;
+            if (0 <= ctx.stratum)
+            {
+                reply.stratum = ctx.stratum;
+            }
 
-            reply.dump();
-            std::cout << std::endl;
+            if (ctx.verbose)
+            {
+                reply.dump();
+                std::cout << std::endl;
+            }
         });
 
         while (!g_shutdown_requested)
@@ -124,16 +184,15 @@ int run(std::string const & local_interface)
     catch (std::exception const& ex)
     {
         std::cerr << "error: " << ex.what() << std::endl;
-        exit_code = EXIT_FAILURE;
+        ctx.exit_code = EXIT_FAILURE;
     }
     catch (...)
     {
         std::cerr << "error: unknown error" << std::endl;
-        exit_code = EXIT_FAILURE;
+        ctx.exit_code = EXIT_FAILURE;
     }
     
     g_server = nullptr;
-    return exit_code;
 }
 
 }
@@ -145,7 +204,7 @@ int main(int argc, char * argv[])
 
     if (!ctx.show_help)
     {
-        ctx.exit_code = run(ctx.local_interface);
+        run(ctx);
     }
     else
     {
