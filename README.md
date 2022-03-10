@@ -44,6 +44,15 @@ The example clients requests the time form the server provided as argument. It w
 The library is intended for testing only, e.g. provide a local SNTP server an play around with some options, e.g. stratum.  
 It is not intended for productive usage.
 
+## Known limitations
+
+- IPv4 only  
+  The current implementations does not support IPv6.
+- no authentication  
+  SNTP authetication is not supported. The optional authentication field is ignored in requests and omitted in replies.
+- timestamp fractions not displayed  
+  Timestamp fractions are not displayed in packet dumps, but they are provided in the packet struct.
+
 ## References
 
 - [RFC 4330: SNTPv4](https://datatracker.ietf.org/doc/html/rfc4330)  
