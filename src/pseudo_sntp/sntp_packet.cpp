@@ -1,7 +1,70 @@
 #include "pseudo_sntp/sntp_packet.hpp"
 #include "pseudo_sntp/sntp_defines.hpp"
 
+#include <cmath>
+
 #include <iostream>
+
+namespace
+{
+
+char const * dump_stratum(uint8_t stratum)
+{
+    if (pseudo_sntp::SNTP_STRATUM_KISS_OF_DEATH == stratum)
+    {
+        return "Kiss o' Death";
+    }
+    else if (pseudo_sntp::SNTP_STRATUM_PRIMARY == stratum)
+    {
+        return "primary";
+    }
+    else if (stratum < 16)
+    {
+        return "secondary";
+    }
+    else
+    {
+        return "invalid";
+    }
+}
+
+char const * dump_leap(uint8_t leap)
+{
+    switch (leap)
+    {
+        case pseudo_sntp::SNTP_LEAP_NO_WARNING:
+            return "no warning";
+        case pseudo_sntp::SNTP_LEAP_SECOND_MORE:
+            return "last minute has 61 seconds";
+        case pseudo_sntp::SNTP_LEAP_SECOND_LESS:
+            return "last minute has 59 seconds";
+        case pseudo_sntp::SNTP_LEAP_UNSYNCRHONIZED:
+            return "clock not synchronized";
+        default:
+            return "invalid";
+    }
+}
+
+char const * dump_mode(uint8_t mode)
+{
+    switch (mode)
+    {
+        case pseudo_sntp::SNTP_MODE_SYMMETRIC_ACTIVE:
+            return "symmetric active";
+        case pseudo_sntp::SNTP_MODE_SYMMETRIC_PASSIVE:
+            return "symmetric passive";
+        case pseudo_sntp::SNTP_MODE_CLIENT:
+            return "client";
+        case pseudo_sntp::SNTP_MODE_SERVER:
+            return "server";
+        case pseudo_sntp::SNTP_MODE_BROADCAST:
+            return "broadcast";
+        default:
+            return "invalid";
+    }
+}
+
+}
 
 namespace pseudo_sntp
 {
@@ -176,12 +239,12 @@ size_t sntp_packet::serialize(uint8_t * buffer, size_t size) const
 void sntp_packet::dump() const
 {
     std::cout
-        << "leap                : " << (int) leap << std::endl
+        << "leap                : " << dump_leap(leap) << " (" << (int) leap << ")" << std::endl
         << "version             : " << (int) version << std::endl
-        << "mode                : " << (int) mode << std::endl
-        << "stratum             : " << (int) stratum << std::endl
-        << "poll intevall       : " << (int) poll_intervall << std::endl
-        << "precision           : " << (int)  precision << std::endl
+        << "mode                : " << dump_mode(mode) << " (" << (int) mode << ")" <<std::endl
+        << "stratum             : " << dump_stratum(stratum) << " (" << (int) stratum << ")" << std::endl
+        << "poll intevall       : " << pow(2.0, poll_intervall) << "s (" << (int) poll_intervall << ")" << std::endl
+        << "precision           : " << pow(2.0, precision) << "s (" << (int)  precision << ")" << std::endl
         << "root delay          : " << root_delay << std::endl
         << "root dispersion     : " << root_dispersion << std::endl
         << "reference identifier: " 
