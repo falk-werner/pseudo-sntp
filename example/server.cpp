@@ -141,9 +141,11 @@ void parse_args(int argc, char * argv[], context & ctx)
                 ctx.verbose = true;
                 break; 
             default:
+                std::cerr << "error: invalid option" << std::endl;
                 ctx.exit_code = EXIT_FAILURE;
                 ctx.show_help = true;
                 finished = true;
+                break;
         }
     }
 }

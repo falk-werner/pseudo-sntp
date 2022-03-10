@@ -34,6 +34,11 @@ sntp_client::~sntp_client()
     delete(d);
 }
 
+void sntp_client::set_timeout(int millis)
+{
+    d->client.set_timeout(millis);
+}
+
 void sntp_client::poll(sntp_packet& packet)
 {
     uint8_t data[BUFFER_SIZE] = {0};

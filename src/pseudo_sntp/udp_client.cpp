@@ -50,6 +50,14 @@ udp_client::~udp_client()
     }
 }
 
+void udp_client::set_timeout(int millis)
+{
+    struct timeval tv;
+    tv.tv_sec = millis / 1000;
+    tv.tv_usec = (millis % 1000) * 1000;
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&tv), sizeof(struct timeval));
+}
+
 void udp_client::send_to(uint8_t const * data, size_t size, endpoint const& peer)
 {
     struct sockaddr_in address;

@@ -17,6 +17,7 @@ public:
     udp_client();
     explicit udp_client(int fd);
     ~udp_client();
+    void set_timeout(int millis);
     void send_to(uint8_t const * data, size_t size, endpoint const& peer);
     size_t recv_from(uint8_t * buffer, size_t size, endpoint & peer);
 

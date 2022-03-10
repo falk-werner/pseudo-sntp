@@ -14,6 +14,7 @@ class sntp_client
 public:
     sntp_client(std::string const & hostname);
     ~sntp_client();
+    void set_timeout(int millis);
     void poll(sntp_packet& packet);
 private:
     class detail;
