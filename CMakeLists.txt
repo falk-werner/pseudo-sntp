@@ -24,7 +24,7 @@ target_include_directories(pseudo_sntp PRIVATE src)
 
 configure_file(pseudo_sntp.pc.in pseudo_sntp.pc @ONLY)
 
-install(TARGETS pseudo_sntp)
+install(TARGETS pseudo_sntp DESTINATION lib)
 install(DIRECTORY include/pseudo_sntp DESTINATION include)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pseudo_sntp.pc DESTINATION lib/pkgconfig)
 
@@ -32,10 +32,10 @@ if(NOT WITHOUT_EXAMPLES)
 
 add_executable(sntp-client example/client.cpp)
 target_link_libraries(sntp-client PRIVATE pseudo_sntp)
-install(TARGETS sntp-client)
+install(TARGETS sntp-client DESTINATION bin)
 
 add_executable(sntp-server example/server.cpp)
 target_link_libraries(sntp-server PRIVATE pseudo_sntp)
-install(TARGETS sntp-server)
+install(TARGETS sntp-server DESTINATION bin)
 
 endif()
