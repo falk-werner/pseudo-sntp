@@ -5,10 +5,9 @@ Pseudo SNTP server for testing purposes.
 ## Build and install
 
 ````
-mkdir build
-cd build
-make
-sudo make install
+cmake -B build
+cmake --build build
+sudo cmake --install build
 ````
 
 ## Run example server
